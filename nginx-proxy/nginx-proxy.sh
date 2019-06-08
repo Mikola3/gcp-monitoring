@@ -98,11 +98,11 @@ while [ "$1" != "" ]; do
     esac
 done
 
-export CURRENT_CONTEXT=$(kubectl config view -o jsonpath='{.current-context}')
-export USER_NAME=$(kubectl config view -o jsonpath='{.contexts[?(@.name == "'"${CURRENT_CONTEXT}"'")].context.user}')
-export CLUSTER_NAME=$(kubectl config view -o jsonpath='{.contexts[?(@.name == "'"${CURRENT_CONTEXT}"'")].context.cluster}')
-kubectl config set-context spark --cluster=${CLUSTER_NAME} --user=${USER_NAME} --kubeconfig=$1
-kubectl config use-context spark --kubeconfig=$1
+#export CURRENT_CONTEXT=$(kubectl config view -o jsonpath='{.current-context}')
+#export USER_NAME=$(kubectl config view -o jsonpath='{.contexts[?(@.name == "'"${CURRENT_CONTEXT}"'")].context.user}')
+#export CLUSTER_NAME=$(kubectl config view -o jsonpath='{.contexts[?(@.name == "'"${CURRENT_CONTEXT}"'")].context.cluster}')
+#kubectl config set-context spark --cluster=${CLUSTER_NAME} --user=${USER_NAME} --kubeconfig=$1
+#kubectl config use-context spark --kubeconfig=$1
 
 case "$CMD" in
   create)
