@@ -23,40 +23,40 @@ create_proxy() {
   CMD=""
 
   if [ "$ELASTICSEARCH" == "on" ]; then
-    eval "cat ./elasticsearch.yaml | sed 's/{STACKNAME}/$ES_STACK_NAME/g' | kubectl apply --kubeconfig $KUBE_CONFIG -f - -n default"
+    eval "cat ./elasticsearch.yaml | sed 's/{STACKNAME}/$ES_STACK_NAME/g' | kubectl apply --kubeconfig $KUBE_CONFIG -f - -n jenkins"
     CMD="$CMD | sed 's/#E //g'"
   fi
 
   if [ "$PROMETHEUS" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f prometheus.yaml -n default
+    kubectl apply --kubeconfig $KUBE_CONFIG -f prometheus.yaml -n jenkins
     CMD="$CMD | sed 's/#P //g'"
   fi
 
   if [ "$GRAFANA" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f grafana.yaml -n default
+    kubectl apply --kubeconfig $KUBE_CONFIG -f grafana.yaml -n jenkins
     CMD="$CMD | sed 's/#G //g'"
   fi
 
   if [ "$ALERTMANAGER" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f alertmanager.yaml -n default
+    kubectl apply --kubeconfig $KUBE_CONFIG -f alertmanager.yaml -n jenkins
     CMD="$CMD | sed 's/#A //g'"
   fi
 
   echo "$CREDENTIALS" > ./htpasswd
-  kubectl create configmap nginxpwd --from-file=./htpasswd -n default
+  kubectl create configmap nginxpwd --from-file=./htpasswd -n jenkins
   rm -f ./htpasswd
   eval "cat ./nginx-proxy.yaml $CMD | kubectl apply --kubeconfig $KUBE_CONFIG -f -"
 }
 
 delete_proxy() {
-  kubectl delete configmap nginxelasticsearch --kubeconfig=$1 -n default
-  kubectl delete configmap nginxprometheus --kubeconfig=$1 -n default
-  kubectl delete configmap nginxgrafana --kubeconfig=$1 -n default
-  kubectl delete configmap nginxalertmanager --kubeconfig=$1 -n default
-  kubectl delete configmap nginxpwd --kubeconfig=$1 -n default
-  kubectl delete configmap nginxconf --kubeconfig=$1 -n default
-  kubectl delete service/nginx-proxy --kubeconfig=$1 -n default
-  kubectl delete replicationcontroller/nginx-controller --kubeconfig=$1 -n default
+  kubectl delete configmap nginxelasticsearch --kubeconfig=$1 -n jenkins
+  kubectl delete configmap nginxprometheus --kubeconfig=$1 -n jenkins
+  kubectl delete configmap nginxgrafana --kubeconfig=$1 -n jenkins
+  kubectl delete configmap nginxalertmanager --kubeconfig=$1 -n jenkins
+  kubectl delete configmap nginxpwd --kubeconfig=$1 -n jenkins
+  kubectl delete configmap nginxconf --kubeconfig=$1 -n jenkins
+  kubectl delete service/nginx-proxy --kubeconfig=$1 -n jenkins
+  kubectl delete replicationcontroller/nginx-controller --kubeconfig=$1 -n jenkins
 }
 
 ELASTICSEARCH_STACK_NAME="none"
