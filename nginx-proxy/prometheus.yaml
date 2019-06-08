@@ -1,0 +1,14 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginxprometheus
+data:
+  prometheus.conf: |
+    location /monitoring/ {
+      proxy_pass http://prometheus.monitoring.svc.cluster.local:8080/;
+      proxy_set_header HOST $host;
+      proxy_set_header Referer $http_referer;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }

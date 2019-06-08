@@ -1,0 +1,114 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginxconf
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+
+        keepalive_timeout  60;
+
+        server {
+            listen 80;
+            server_name _;
+            access_log  /var/log/nginx/host.access.log;
+
+            auth_basic "Secure login";
+            auth_basic_user_file /etc/nginx/htpasswd;
+
+            #E include /etc/nginx/elasticsearch.conf;
+            #P include /etc/nginx/prometheus.conf;
+            #G include /etc/nginx/grafana.conf;
+            #A include /etc/nginx/alertmanager.conf;
+        }
+    }
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: nginx-controller
+spec:
+  replicas: 1
+  selector:
+    component: nginx
+  template:
+    metadata:
+      labels:
+        component: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: nginx-pwd
+              mountPath: /etc/nginx/htpasswd
+              subPath: htpasswd
+        #E     - name: nginx-elasticsearch
+        #E       mountPath: /etc/nginx/elasticsearch.conf
+        #E       subPath: elasticsearch.conf
+        #P     - name: nginx-prometheus
+        #P       mountPath: /etc/nginx/prometheus.conf
+        #P       subPath: prometheus.conf
+        #G     - name: nginx-grafana
+        #G       mountPath: /etc/nginx/grafana.conf
+        #G       subPath: grafana.conf
+        #A     - name: nginx-alertmanager
+        #A       mountPath: /etc/nginx/alertmanager.conf
+        #A       subPath: alertmanager.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginxconf
+        - name: nginx-pwd
+          configMap:
+            name: nginxpwd
+        #E - name: nginx-elasticsearch
+        #E   configMap:
+        #E     name: nginxelasticsearch
+        #P - name: nginx-prometheus
+        #P   configMap:
+        #P     name: nginxprometheus
+        #G - name: nginx-grafana
+        #G   configMap:
+        #G     name: nginxgrafana
+        #A - name: nginx-alertmanager
+        #A   configMap:
+        #A     name: nginxalertmanager
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-proxy
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    component: nginx
+  type: LoadBalancer

@@ -1,0 +1,31 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginxgrafana
+data:
+  grafana.conf: |
+    location /grafana/ {
+      proxy_pass http://grafana-service.monitoring.svc.cluster.local:3000/;
+      proxy_set_header HOST $host;
+      proxy_set_header Referer $http_referer;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Authorization "";
+
+      add_header 'Access-Control-Allow-Origin' $http_origin;
+      add_header 'Access-Control-Allow-Credentials' 'true' always;
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+      add_header 'Access-Control-Expose-Headers' 'Content-Type,Content-Length,Content-Range';
+      add_header 'Access-Control-Allow-Headers'
+                 'Accept,
+                  Authorization,
+                  Cache-Control,
+                  Content-Type,
+                  DNT,
+                  If-Modified-Since,
+                  Keep-Alive,
+                  Origin,
+                  User-Agent,
+                  X-Requested-With' always;
+    }

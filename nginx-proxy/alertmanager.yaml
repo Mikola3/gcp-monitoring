@@ -1,0 +1,12 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginxalertmanager
+data:
+  alertmanager.conf: |
+    location /alertmanager/ {
+      proxy_pass http://alertmanager-service.monitoring.svc.cluster.local:9093/;
+      proxy_set_header HOST $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }

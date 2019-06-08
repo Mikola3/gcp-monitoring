@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |-
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'phoenix-team'
+      routes:
+      - match:
+          alertname: 'High Pod Memory'
+    receivers:
+      - name: 'phoenix-team'
+        slack_configs:
+        - api_url: 'https://hooks.slack.com/services/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'
+          text: "summary: {{ .CommonAnnotations.summary }}"
