@@ -23,40 +23,40 @@ create_proxy() {
   CMD=""
 
   if [ "$ELASTICSEARCH" == "on" ]; then
-    eval "cat ./elasticsearch.yaml | sed 's/{STACKNAME}/$ES_STACK_NAME/g' | kubectl apply --kubeconfig $KUBE_CONFIG -f -"
+    eval "cat ./elasticsearch.yaml | sed 's/{STACKNAME}/$ES_STACK_NAME/g' | kubectl apply --kubeconfig $KUBE_CONFIG -f - -n default"
     CMD="$CMD | sed 's/#E //g'"
   fi
 
   if [ "$PROMETHEUS" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f prometheus.yaml
+    kubectl apply --kubeconfig $KUBE_CONFIG -f prometheus.yaml -n default
     CMD="$CMD | sed 's/#P //g'"
   fi
 
   if [ "$GRAFANA" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f grafana.yaml
+    kubectl apply --kubeconfig $KUBE_CONFIG -f grafana.yaml -n default
     CMD="$CMD | sed 's/#G //g'"
   fi
 
   if [ "$ALERTMANAGER" == "on" ]; then
-    kubectl apply --kubeconfig $KUBE_CONFIG -f alertmanager.yaml
+    kubectl apply --kubeconfig $KUBE_CONFIG -f alertmanager.yaml -n default
     CMD="$CMD | sed 's/#A //g'"
   fi
 
   echo "$CREDENTIALS" > ./htpasswd
-  kubectl create configmap nginxpwd --from-file=./htpasswd
+  kubectl create configmap nginxpwd --from-file=./htpasswd -n default
   rm -f ./htpasswd
   eval "cat ./nginx-proxy.yaml $CMD | kubectl apply --kubeconfig $KUBE_CONFIG -f -"
 }
 
 delete_proxy() {
-  kubectl delete configmap nginxelasticsearch --kubeconfig=$1
-  kubectl delete configmap nginxprometheus --kubeconfig=$1
-  kubectl delete configmap nginxgrafana --kubeconfig=$1
-  kubectl delete configmap nginxalertmanager --kubeconfig=$1
-  kubectl delete configmap nginxpwd --kubeconfig=$1
-  kubectl delete configmap nginxconf --kubeconfig=$1
-  kubectl delete service/nginx-proxy --kubeconfig=$1
-  kubectl delete replicationcontroller/nginx-controller --kubeconfig=$1
+  kubectl delete configmap nginxelasticsearch --kubeconfig=$1 -n default
+  kubectl delete configmap nginxprometheus --kubeconfig=$1 -n default
+  kubectl delete configmap nginxgrafana --kubeconfig=$1 -n default
+  kubectl delete configmap nginxalertmanager --kubeconfig=$1 -n default
+  kubectl delete configmap nginxpwd --kubeconfig=$1 -n default
+  kubectl delete configmap nginxconf --kubeconfig=$1 -n default
+  kubectl delete service/nginx-proxy --kubeconfig=$1 -n default
+  kubectl delete replicationcontroller/nginx-controller --kubeconfig=$1 -n default
 }
 
 ELASTICSEARCH_STACK_NAME="none"
